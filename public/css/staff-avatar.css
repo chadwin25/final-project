@@ -1,0 +1,6 @@
+img.cashier-avatar {
+    display: block;
+    flex: 0 0 36px;
+    object-fit: cover;
+    overflow: hidden;
+}

@@ -6,6 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>@yield('title', 'CampusBite POS')</title>
     <link rel="stylesheet" href="{{ asset('css/campusbite.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/staff-avatar.css') }}">
     @stack('styles')
 </head>
 <body>
@@ -54,14 +55,17 @@
                 <span>Customers</span>
             </a>
 
-            <span class="nav-item is-planned">
+            <a
+                class="nav-item {{ request()->routeIs('staff.*') ? 'is-active' : '' }}"
+                href="{{ route('staff.index') }}"
+                @if (request()->routeIs('staff.*')) aria-current="page" @endif
+            >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <rect x="3" y="5" width="18" height="16" rx="2"/>
                     <path d="M8 5V3M16 5V3M3 10h18"/>
                 </svg>
                 <span>Staff</span>
-                <small>Soon</small>
-            </span>
+            </a>
 
             <span class="nav-item is-planned">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -89,7 +93,19 @@
                 <p class="topbar-date">{{ now('Asia/Shanghai')->format('F j, Y') }}</p>
             </div>
             <div class="cashier">
-                <span class="cashier-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr(auth()->user()->full_name, 0, 1)) }}</span>
+                @if (auth()->user()->avatar)
+                    <img
+                        class="cashier-avatar"
+                        src="{{ asset('storage/'.auth()->user()->avatar) }}"
+                        alt=""
+                        width="36"
+                        height="36"
+                    >
+                @else
+                    <span class="cashier-avatar" aria-hidden="true">
+                        {{ mb_strtoupper(mb_substr(auth()->user()->full_name, 0, 1)) }}
+                    </span>
+                @endif
                 <span>
                     <strong>{{ auth()->user()->full_name }}</strong>
                     <small>Signed-in staff</small>
