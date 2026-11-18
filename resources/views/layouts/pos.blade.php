@@ -42,14 +42,17 @@
                 <span>Products</span>
             </a>
 
-            <span class="nav-item is-planned">
+            <a
+                class="nav-item {{ request()->routeIs('customers.*') ? 'is-active' : '' }}"
+                href="{{ route('customers.index') }}"
+                @if (request()->routeIs('customers.*')) aria-current="page" @endif
+            >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <circle cx="9" cy="8" r="3"/>
                     <path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M17 14a6 6 0 0 1 4 6"/>
                 </svg>
                 <span>Customers</span>
-                <small>Soon</small>
-            </span>
+            </a>
 
             <span class="nav-item is-planned">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">

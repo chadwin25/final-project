@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +23,7 @@ Route::middleware('auth')->group(function () {
         ->name('products.restore');
 
     Route::resource('products', ProductController::class)->except('show');
+    Route::resource('customers', CustomerController::class)->except('show');
 
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');
