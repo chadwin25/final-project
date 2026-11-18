@@ -6,6 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>@yield('title', 'CampusBite POS')</title>
     <link rel="stylesheet" href="{{ asset('css/campusbite.css') }}">
+    @stack('styles')
 </head>
 <body>
 <div class="app-shell">
@@ -17,7 +18,11 @@
         </a>
 
         <nav class="sidebar-nav" aria-label="Main navigation">
-            <a class="nav-item is-active" href="{{ route('dashboard') }}" aria-current="page">
+            <a
+                class="nav-item {{ request()->routeIs('dashboard') ? 'is-active' : '' }}"
+                href="{{ route('dashboard') }}"
+                @if (request()->routeIs('dashboard')) aria-current="page" @endif
+            >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10Z"/>
                     <path d="M9 21v-7h6v7"/>
@@ -25,14 +30,17 @@
                 <span>Home</span>
             </a>
 
-            <span class="nav-item is-planned">
+            <a
+                class="nav-item {{ request()->routeIs('products.*') ? 'is-active' : '' }}"
+                href="{{ route('products.index') }}"
+                @if (request()->routeIs('products.*')) aria-current="page" @endif
+            >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <path d="M4 5h16M4 12h16M4 19h16"/>
                     <path d="M7 5v14"/>
                 </svg>
                 <span>Products</span>
-                <small>Soon</small>
-            </span>
+            </a>
 
             <span class="nav-item is-planned">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -91,5 +99,6 @@
         </main>
     </div>
 </div>
+@stack('scripts')
 </body>
 </html>
