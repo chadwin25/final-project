@@ -51,25 +51,35 @@
                     <article class="product-card">
                         <div class="product-image">
                             @if ($product->image)
-                                <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}">
+                                <img
+                                    src="{{ asset('storage/'.$product->image) }}"
+                                    alt="{{ $product->name }}"
+                                >
                             @else
-                                {{-- Product image appears here after upload in the Products milestone. --}}
-                                <span class="image-placeholder" aria-hidden="true">Photo coming soon</span>
+                                <span class="image-placeholder" aria-hidden="true">
+                                    Photo coming soon
+                                </span>
                             @endif
                         </div>
+
                         <div class="product-card-content">
                             <h2>{{ $product->name }}</h2>
+
                             <div class="product-meta">
                                 <strong>₱{{ number_format((float) $product->price, 2) }}</strong>
+
                                 <span class="{{ $product->stock_quantity === 0 ? 'stock-out' : ($product->stock_quantity <= 5 ? 'stock-low' : '') }}">
                                     {{ $stockLabel }} · {{ $product->stock_quantity }}
                                 </span>
                             </div>
+
                             <a
                                 class="select-product"
                                 href="{{ route('dashboard', ['product' => $product->id, 'search' => $search]) }}"
                                 aria-label="Preview {{ $product->name }}"
-                            >Preview product</a>
+                            >
+                                Preview product
+                            </a>
                         </div>
                     </article>
                 @endforeach
@@ -83,6 +93,7 @@
                 <h2 id="sale-heading">Record sale</h2>
                 <p>One product per sale</p>
             </div>
+
             <span class="preview-label">Preview</span>
         </div>
 
@@ -98,12 +109,14 @@
                 <strong>₱{{ number_format((float) $selectedProduct->price, 2) }}</strong>
             </div>
         @else
-            <p class="preview-empty">Choose a product from the menu when products are available.</p>
+            <p class="preview-empty">
+                Choose a product from the menu when products are available.
+            </p>
         @endif
 
-        <div class="preview-message">
-            Quantity, optional customer, total, and the working <strong>Record sale</strong> action arrive in the sales milestone.
-        </div>
+        <a class="select-product" href="{{ route('sales.create') }}">
+            Open Record Sale
+        </a>
     </aside>
 </div>
 @endsection

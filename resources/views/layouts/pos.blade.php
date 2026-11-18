@@ -30,6 +30,19 @@
                 </svg>
                 <span>Home</span>
             </a>
+            <a
+    class="nav-item {{ request()->routeIs('sales.create') ? 'is-active' : '' }}"
+    href="{{ route('sales.create') }}"
+    @if (request()->routeIs('sales.create')) aria-current="page" @endif
+>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M3 4h2l2.2 11h10.9l2-8H6"/>
+        <circle cx="9" cy="19" r="1"/>
+        <circle cx="17" cy="19" r="1"/>
+        <path d="M12 9v5M9.5 11.5h5"/>
+    </svg>
+    <span>Record sale</span>
+</a>
 
             <a
                 class="nav-item {{ request()->routeIs('products.*') ? 'is-active' : '' }}"
