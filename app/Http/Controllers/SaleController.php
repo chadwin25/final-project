@@ -14,6 +14,17 @@ use Illuminate\Validation\ValidationException;
 
 class SaleController extends Controller
 {
+    public function index(): View
+    {
+        $sales = Sale::query()
+            ->with(['product', 'customer', 'staff'])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate(15);
+
+        return view('sales.history', compact('sales'));
+    }
+
     public function create(): View
     {
         $products = Product::query()

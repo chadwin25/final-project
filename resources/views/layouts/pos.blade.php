@@ -80,14 +80,17 @@
                 <span>Staff</span>
             </a>
 
-            <span class="nav-item is-planned">
+            <a
+                class="nav-item {{ request()->routeIs('sales.history') ? 'is-active' : '' }}"
+                href="{{ route('sales.history') }}"
+                @if (request()->routeIs('sales.history')) aria-current="page" @endif
+            >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                     <path d="M5 3h14v18l-3-2-4 2-4-2-3 2V3Z"/>
                     <path d="M8 8h8M8 12h8"/>
                 </svg>
                 <span>Sales history</span>
-                <small>Soon</small>
-            </span>
+            </a>
         </nav>
 
         <div class="sidebar-bottom">
@@ -103,7 +106,7 @@
         <header class="topbar">
             <div>
                 <p class="topbar-name">CampusBite POS</p>
-                <p class="topbar-date">{{ now('Asia/Shanghai')->format('F j, Y') }}</p>
+                <p class="topbar-date">{{ now('Asia/Manila')->format('F j, Y') }}</p>
             </div>
             <div class="cashier">
                 @if (auth()->user()->avatar)

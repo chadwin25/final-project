@@ -24,6 +24,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/sales/create', [SaleController::class, 'create'])
         ->name('sales.create');
 
+    Route::get('/sales/history', [SaleController::class, 'index'])
+        ->name('sales.history');
+
     Route::post('/sales', [SaleController::class, 'store'])
         ->name('sales.store');
 
