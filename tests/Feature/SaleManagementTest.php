@@ -13,6 +13,84 @@ class SaleManagementTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_guest_cannot_open_sales_history(): void
+    {
+        $this->get(route('sales.history'))
+            ->assertRedirect(route('login'));
+    }
+
+    public function test_sales_history_displays_timestamps_in_manila_time(): void
+    {
+        $staff = User::factory()->create();
+        $product = $this->createProduct(stock: 5);
+        $sale = Sale::create([
+            'product_id' => $product->id,
+            'sold_by' => $staff->id,
+            'quantity' => 1,
+            'total_price' => '9.50',
+        ]);
+        $sale->forceFill([
+            'created_at' => \Illuminate\Support\Carbon::parse('2026-11-20 15:21:00', 'UTC'),
+        ])->save();
+
+        $this->actingAs($staff)
+            ->get(route('sales.history'))
+            ->assertOk()
+            ->assertSee('Nov 20, 2026 · 11:21 PM')
+            ->assertSee('2026-11-20T23:21:00+08:00');
+    }
+
+    public function test_sales_history_is_newest_first_and_paginated(): void
+    {
+        $staff = User::factory()->create(['full_name' => 'Taylor Staff']);
+        $product = $this->createProduct(stock: 20);
+        $customer = Customer::create([
+            'full_name' => 'Casey Customer',
+            'email' => 'casey@example.test',
+        ]);
+
+        foreach (range(1, 16) as $number) {
+            $sale = Sale::create([
+                'product_id' => $product->id,
+                'customer_id' => $number === 16 ? $customer->id : null,
+                'sold_by' => $staff->id,
+                'quantity' => $number,
+                'total_price' => number_format($number * 9.5, 2, '.', ''),
+            ]);
+            $sale->forceFill([
+                'created_at' => now()->subMinutes(17 - $number),
+            ])->save();
+        }
+
+        $staff->delete();
+        $product->delete();
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('sales.history'))
+            ->assertOk()
+            ->assertSee('Sales history')
+            ->assertSee('Test Product')
+            ->assertSee('Taylor Staff')
+            ->assertSee('Archived')
+            ->assertSee('No customer linked')
+            ->assertSee('Casey Customer')
+            ->assertSee('₱152.00')
+            ->assertDontSee('₱9.50')
+            ->assertSee('Page 1 of 2');
+
+        $customer->delete();
+
+        $this->get(route('sales.history'))
+            ->assertOk()
+            ->assertSee('No customer linked')
+            ->assertDontSee('Casey Customer');
+
+        $this->get(route('sales.history', ['page' => 2]))
+            ->assertOk()
+            ->assertSee('₱9.50')
+            ->assertSee('Page 2 of 2');
+    }
+
     public function test_valid_sale_records_database_price_and_reduces_stock(): void
     {
         /** @var User $staff */
