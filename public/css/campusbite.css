@@ -587,6 +587,15 @@ a {
     font-size: 12px;
 }
 
+.success-message {
+    margin: 0 0 18px;
+    padding: 12px;
+    border-radius: 8px;
+    background: #203d32;
+    color: #c9f3dc;
+    font-size: 13px;
+}
+
 .form-alert {
     margin-bottom: 22px;
     padding: 12px;

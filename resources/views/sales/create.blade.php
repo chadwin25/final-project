@@ -12,6 +12,10 @@
             </div>
         </div>
 
+        @if (session('status'))
+            <p class="success-message" role="status">{{ session('status') }}</p>
+        @endif
+
         @if ($products->isEmpty())
             <div class="empty-state">
                 <h2>No products in stock</h2>
@@ -144,6 +148,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     product.addEventListener('change', updatePreview);
     quantity.addEventListener('input', updatePreview);
+    product.form.addEventListener('submit', () => {
+        submit.disabled = true;
+        submit.textContent = 'Recording...';
+    });
     updatePreview();
 });
 </script>
