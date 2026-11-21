@@ -61,6 +61,6 @@ class CustomerController extends Controller
         $customer->delete();
 
         return redirect()->route('customers.index')
-            ->with('status', 'Customer deleted. Past sales remain recorded.');
+            ->with('status', 'Customer deleted. Past orders remain available.');
     }
 }

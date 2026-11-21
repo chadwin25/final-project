@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\File;
+use Illuminate\Validation\Rule;
 
 class ProductRequest extends FormRequest
 {
@@ -16,6 +17,7 @@ class ProductRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:100'],
+            'category' => ['required', Rule::in(['food', 'drinks', 'add_on'])],
             'price' => [
                 'required',
                 'numeric',

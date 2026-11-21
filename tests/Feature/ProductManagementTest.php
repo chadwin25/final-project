@@ -27,6 +27,7 @@ class ProductManagementTest extends TestCase
         $this->actingAs($staff)
             ->post(route('products.store'), [
                 'name' => 'Tuna Sandwich',
+                'category' => 'food',
                 'price' => '49.50',
                 'stock_quantity' => 8,
                 'image' => UploadedFile::fake()->image('sandwich.jpg', 600, 400),
@@ -36,6 +37,7 @@ class ProductManagementTest extends TestCase
         $product = Product::where('name', 'Tuna Sandwich')->firstOrFail();
 
         $this->assertSame('49.50', $product->price);
+        $this->assertSame('food', $product->category);
         $this->assertSame(8, $product->stock_quantity);
         $this->assertNotNull($product->image);
         Storage::disk('public')->assertExists($product->image);
@@ -49,6 +51,7 @@ class ProductManagementTest extends TestCase
         $this->actingAs($staff)
             ->post(route('products.store'), [
                 'name' => 'Invalid Product',
+                'category' => 'food',
                 'price' => '40.00',
                 'stock_quantity' => 3,
                 'image' => UploadedFile::fake()->create('notes.txt', 10, 'text/plain'),
@@ -74,6 +77,7 @@ class ProductManagementTest extends TestCase
         $this->actingAs($staff)
             ->put(route('products.update', $product), [
                 'name' => 'Chicken Rice Meal',
+                'category' => 'add_on',
                 'price' => '85.00',
                 'stock_quantity' => 7,
                 'image' => UploadedFile::fake()->image('new.jpg', 600, 400),
@@ -83,6 +87,7 @@ class ProductManagementTest extends TestCase
         $product->refresh();
 
         $this->assertSame('Chicken Rice Meal', $product->name);
+        $this->assertSame('add_on', $product->category);
         Storage::disk('public')->assertExists($product->image);
         Storage::disk('public')->assertMissing('products/old.jpg');
     }

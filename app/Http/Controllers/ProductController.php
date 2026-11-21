@@ -110,7 +110,7 @@ class ProductController extends Controller
         $product->delete();
 
         return redirect()->route('products.index')
-            ->with('status', 'Product archived. Past sales will still retain it.');
+            ->with('status', 'Product archived. Past orders will still retain it.');
     }
 
     public function restore(int $product): RedirectResponse

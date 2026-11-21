@@ -1,6 +1,6 @@
 @extends('layouts.pos')
 
-@section('title', 'Customers · CampusBite POS')
+@section('title', 'Customers · CampusBite')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/customers.css') }}">
@@ -14,7 +14,7 @@
 <div class="customers-heading">
     <div>
         <h1>Customers</h1>
-        <p>Keep contact details ready for optional customer sales.</p>
+        <p>Keep contact details ready for customer orders.</p>
     </div>
     <a class="primary-button customers-primary" href="{{ route('customers.create') }}">Add customer</a>
 </div>
@@ -71,7 +71,7 @@
                     <form
                         method="POST"
                         action="{{ route('customers.destroy', $customer) }}"
-                        data-confirm-message="Delete this customer? Past sales will remain, but they will no longer show this customer."
+                        data-confirm-message="Delete this customer? Past orders will remain, but they will no longer show this customer."
                     >
                         @csrf
                         @method('DELETE')

@@ -1,6 +1,6 @@
 @extends('layouts.pos')
 
-@section('title', ($product->exists ? 'Edit product' : 'Add product').' · CampusBite POS')
+@section('title', ($product->exists ? 'Edit product' : 'Add product').' · CampusBite')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/products.css') }}">
@@ -55,6 +55,23 @@
 
         <div class="product-field-pair">
             <div class="field">
+                <label for="category">Category</label>
+                <select
+                    id="category"
+                    name="category"
+                    required
+                    aria-invalid="{{ $errors->has('category') ? 'true' : 'false' }}"
+                >
+                    <option value="food" @selected(old('category', $product->category ?? 'food') === 'food')>Food</option>
+                    <option value="drinks" @selected(old('category', $product->category ?? 'food') === 'drinks')>Drinks</option>
+                    <option value="add_on" @selected(old('category', $product->category ?? 'food') === 'add_on')>Add-on</option>
+                </select>
+                @error('category')
+                    <p class="field-error">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div class="field">
                 <label for="price">Price (₱)</label>
                 <input
                     id="price"
@@ -72,7 +89,7 @@
                 @enderror
             </div>
 
-            <div class="field">
+            <div class="field product-stock-field">
                 <label for="stock_quantity">Stock quantity</label>
                 <input
                     id="stock_quantity"
