@@ -104,7 +104,7 @@ class SaleManagementTest extends TestCase
         $this->actingAs(User::factory()->create())
             ->get(route('sales.history'))
             ->assertOk()
-            ->assertSee('Sales history')
+            ->assertSee('Orders')
             ->assertSee('Test Product')
             ->assertSee('Taylor Staff')
             ->assertSee('Archived')
@@ -145,7 +145,7 @@ class SaleManagementTest extends TestCase
             ])
             ->assertRedirect(route('sales.create'))
             ->assertSessionHasNoErrors()
-            ->assertSessionHas('status', 'Sale recorded. Test Product has 3 unit(s) remaining.');
+            ->assertSessionHas('status', 'Order complete. Test Product has 3 unit(s) remaining.');
 
         $this->assertDatabaseCount('sales', 1);
         $this->assertDatabaseHas('sales', [

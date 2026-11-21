@@ -1,6 +1,6 @@
 @extends('layouts.pos')
 
-@section('title', ($staff->exists ? 'Edit staff' : 'Add staff').' · CampusBite POS')
+@section('title', ($staff->exists ? 'Edit staff' : 'Add staff').' · CampusBite')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/staff.css') }}">

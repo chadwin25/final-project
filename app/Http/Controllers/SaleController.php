@@ -25,7 +25,7 @@ class SaleController extends Controller
         return view('sales.history', compact('sales'));
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
         $products = Product::query()
             ->where('stock_quantity', '>', 0)
@@ -36,7 +36,12 @@ class SaleController extends Controller
             ->orderBy('full_name')
             ->get(['id', 'full_name']);
 
-        return view('sales.create', compact('products', 'customers'));
+        $requestedProductId = $request->integer('product_id');
+        $selectedProductId = $products->contains('id', $requestedProductId)
+            ? $requestedProductId
+            : null;
+
+        return view('sales.create', compact('products', 'customers', 'selectedProductId'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -51,7 +56,7 @@ class SaleController extends Controller
             'quantity' => ['required', 'integer', 'min:1'],
         ], [
             'product_id.exists' => 'The selected product is archived or unavailable.',
-            'quantity.required' => 'Enter a quantity to record this sale.',
+            'quantity.required' => 'Enter a quantity to complete this order.',
             'quantity.integer' => 'Quantity must be a whole number.',
             'quantity.min' => 'Quantity must be at least 1.',
         ]);
@@ -95,7 +100,7 @@ class SaleController extends Controller
 
         return redirect()->route('sales.create')->with(
             'status',
-            "Sale recorded. {$saleDetails['product_name']} has {$saleDetails['stock_quantity']} unit(s) remaining."
+            "Order complete. {$saleDetails['product_name']} has {$saleDetails['stock_quantity']} unit(s) remaining."
         );
     }
 }

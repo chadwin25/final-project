@@ -3,19 +3,23 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="dark">
-    <title>@yield('title', 'CampusBite POS')</title>
+    <meta name="color-scheme" content="light">
+    <title>@yield('title', 'CampusBite')</title>
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/campusbite.css') }}">
     <link rel="stylesheet" href="{{ asset('css/staff-avatar.css') }}">
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('css/pos-refresh.css') }}">
 </head>
 <body>
 <div class="app-shell">
     <aside class="sidebar">
-        <a class="brand" href="{{ route('dashboard') }}" aria-label="CampusBite POS home">
-            {{-- Replace this brand mark with your logo when provided. --}}
-            <span class="brand-mark" aria-hidden="true">CB</span>
-            <span class="brand-name">CampusBite <small>POS</small></span>
+        <a class="brand" href="{{ route('dashboard') }}" aria-label="CampusBite home">
+            <img class="brand-mark" src="{{ asset('images/campusbite-mark.svg') }}" alt="">
+            <span class="brand-name">CampusBite</span>
         </a>
 
         <nav class="sidebar-nav" aria-label="Main navigation">
@@ -28,7 +32,7 @@
                     <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10Z"/>
                     <path d="M9 21v-7h6v7"/>
                 </svg>
-                <span>Home</span>
+                <span>Register</span>
             </a>
             <a
     class="nav-item {{ request()->routeIs('sales.create') ? 'is-active' : '' }}"
@@ -41,7 +45,7 @@
         <circle cx="17" cy="19" r="1"/>
         <path d="M12 9v5M9.5 11.5h5"/>
     </svg>
-    <span>Record sale</span>
+    <span>Quick Order</span>
 </a>
 
             <a
@@ -89,12 +93,11 @@
                     <path d="M5 3h14v18l-3-2-4 2-4-2-3 2V3Z"/>
                     <path d="M8 8h8M8 12h8"/>
                 </svg>
-                <span>Sales history</span>
+                <span>Orders</span>
             </a>
         </nav>
 
         <div class="sidebar-bottom">
-            <p class="sidebar-note">Built for the school food counter.</p>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button class="signout-button" type="submit">Sign out</button>
@@ -105,27 +108,28 @@
     <div class="app-workspace">
         <header class="topbar">
             <div>
-                <p class="topbar-name">CampusBite POS</p>
-                <p class="topbar-date">{{ now('Asia/Manila')->format('F j, Y') }}</p>
+                <p class="topbar-date">{{ now('Asia/Manila')->format('l, F j, Y') }}</p>
             </div>
-            <div class="cashier">
-                @if (auth()->user()->avatar)
-                    <img
-                        class="cashier-avatar"
-                        src="{{ asset('storage/'.auth()->user()->avatar) }}"
-                        alt=""
-                        width="36"
-                        height="36"
-                    >
-                @else
-                    <span class="cashier-avatar" aria-hidden="true">
-                        {{ mb_strtoupper(mb_substr(auth()->user()->full_name, 0, 1)) }}
+            <div class="topbar-actions">
+                <div class="cashier">
+                    @if (auth()->user()->avatar)
+                        <img
+                            class="cashier-avatar"
+                            src="{{ asset('storage/'.auth()->user()->avatar) }}"
+                            alt=""
+                            width="36"
+                            height="36"
+                        >
+                    @else
+                        <span class="cashier-avatar" aria-hidden="true">
+                            {{ mb_strtoupper(mb_substr(auth()->user()->full_name, 0, 1)) }}
+                        </span>
+                    @endif
+                    <span>
+                        <strong>{{ auth()->user()->full_name }}</strong>
+                        <small>Signed-in staff</small>
                     </span>
-                @endif
-                <span>
-                    <strong>{{ auth()->user()->full_name }}</strong>
-                    <small>Signed-in staff</small>
-                </span>
+                </div>
             </div>
         </header>
 

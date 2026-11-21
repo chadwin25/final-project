@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\Sale;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
@@ -29,9 +28,6 @@ class DashboardController extends Controller
             'products' => $products,
             'selectedProduct' => $selectedProduct,
             'search' => $search,
-            'productCount' => Product::count(),
-            'stockCount' => Product::sum('stock_quantity'),
-            'todaySalesCount' => Sale::whereDate('created_at', today())->count(),
         ]);
     }
 }

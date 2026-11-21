@@ -1,14 +1,14 @@
 @extends('layouts.pos')
 
-@section('title', 'Record Sale · CampusBite POS')
+@section('title', 'Quick Order · CampusBite')
 
 @section('content')
 <div class="dashboard-grid">
     <section class="menu-area" aria-labelledby="sale-heading">
         <div class="section-heading">
             <div>
-                <h1 id="sale-heading">Record sale</h1>
-                <p>Choose one product and enter the quantity.</p>
+                <h1 id="sale-heading">Quick Order</h1>
+                <p>Select an item and quantity to ring up an order.</p>
             </div>
         </div>
 
@@ -19,7 +19,7 @@
         @if ($products->isEmpty())
             <div class="empty-state">
                 <h2>No products in stock</h2>
-                <p>Add stock to a product before recording a sale.</p>
+                <p>Add stock to a product before completing an order.</p>
                 <a href="{{ route('products.index') }}">Go to Products</a>
             </div>
         @else
@@ -35,7 +35,7 @@
                             data-name="{{ $product->name }}"
                             data-price="{{ $product->price }}"
                             data-stock="{{ $product->stock_quantity }}"
-                            @selected((string) old('product_id') === (string) $product->id)
+                            @selected((string) old('product_id', $selectedProductId) === (string) $product->id)
                         >
                             {{ $product->name }} — ₱{{ number_format((float) $product->price, 2) }}
                         </option>
@@ -76,10 +76,10 @@
 
                 <div class="counter-stats">
                     <div><span>Unit price</span><strong id="unit-price">₱0.00</strong></div>
-                    <div><span>Total preview</span><strong id="total-price">₱0.00</strong></div>
+                    <div><span>Total</span><strong id="total-price">₱0.00</strong></div>
                 </div>
 
-                <button id="submit-sale" type="submit" disabled>Record sale</button>
+                <button id="submit-sale" type="submit" disabled>Complete Order</button>
             </form>
         @endif
     </section>
@@ -87,8 +87,8 @@
     <aside class="sale-preview">
         <div class="preview-heading">
             <div>
-                <h2>Sale summary</h2>
-                <p>One product per sale</p>
+                <h2>Order Summary</h2>
+                <p>One item per order</p>
             </div>
         </div>
         <div class="selected-product">
@@ -97,7 +97,7 @@
             <p id="summary-stock">Available stock: —</p>
         </div>
         <p class="preview-message">
-            The server will verify the price and stock again when the sale is submitted.
+            Price and stock are verified again when the order is submitted.
         </p>
     </aside>
 </div>
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
     quantity.addEventListener('input', updatePreview);
     product.form.addEventListener('submit', () => {
         submit.disabled = true;
-        submit.textContent = 'Recording...';
+        submit.textContent = 'Completing order...';
     });
     updatePreview();
 });

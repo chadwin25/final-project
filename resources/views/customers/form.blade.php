@@ -1,6 +1,6 @@
 @extends('layouts.pos')
 
-@section('title', ($customer->exists ? 'Edit customer' : 'Add customer').' · CampusBite POS')
+@section('title', ($customer->exists ? 'Edit customer' : 'Add customer').' · CampusBite')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/customers.css') }}">
@@ -11,7 +11,7 @@
     <div>
         <a class="customers-back" href="{{ route('customers.index') }}">← Back to customers</a>
         <h1>{{ $customer->exists ? 'Edit customer' : 'Add customer' }}</h1>
-        <p>{{ $customer->exists ? 'Update this customer’s contact details.' : 'Add a customer for future sales.' }}</p>
+        <p>{{ $customer->exists ? 'Update this customer’s contact details.' : 'Add a customer for future orders.' }}</p>
     </div>
 </div>
 

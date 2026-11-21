@@ -123,7 +123,7 @@ class StaffController extends Controller
         $staff->delete();
 
         return redirect()->route('staff.index')
-            ->with('status', 'Staff account archived. Past sales remain recorded.');
+            ->with('status', 'Staff account archived. Past orders remain available.');
     }
 
     public function restore(int $staff): RedirectResponse

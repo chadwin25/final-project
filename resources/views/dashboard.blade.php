@@ -1,37 +1,24 @@
 @extends('layouts.pos')
 
-@section('title', 'Home · CampusBite POS')
+@section('title', 'Register · CampusBite')
 
 @section('content')
-<div class="dashboard-grid">
+<div class="dashboard-page">
     <section class="menu-area" aria-labelledby="menu-heading">
-        <div class="section-heading">
+        <div class="section-heading dashboard-heading">
             <div>
-                <h1 id="menu-heading">Food counter</h1>
-                <p>Browse today’s available menu and stock.</p>
+                <h1 id="menu-heading">Today’s menu</h1>
             </div>
         </div>
 
-        <form class="search-form" method="GET" action="{{ route('dashboard') }}" role="search">
-            <label for="menu-search">Search menu</label>
+        <form class="search-form menu-search" method="GET" action="{{ route('dashboard') }}" role="search">
+            <label class="visually-hidden" for="menu-search">Search menu</label>
             <div class="search-controls">
-                <input
-                    id="menu-search"
-                    name="search"
-                    type="search"
-                    value="{{ $search }}"
-                    placeholder="Search menu here…"
-                    maxlength="100"
-                >
+                <span class="search-icon" aria-hidden="true">⌕</span>
+                <input id="menu-search" name="search" type="search" value="{{ $search }}" placeholder="Search the menu" maxlength="100">
                 <button type="submit">Search</button>
             </div>
         </form>
-
-        <div class="counter-stats" aria-label="Current counter information">
-            <div><strong>{{ $productCount }}</strong><span>Menu items</span></div>
-            <div><strong>{{ $stockCount }}</strong><span>Units in stock</span></div>
-            <div><strong>{{ $todaySalesCount }}</strong><span>Sales today</span></div>
-        </div>
 
         @if ($products->isEmpty())
             <div class="empty-state">
@@ -51,34 +38,21 @@
                     <article class="product-card">
                         <div class="product-image">
                             @if ($product->image)
-                                <img
-                                    src="{{ asset('storage/'.$product->image) }}"
-                                    alt="{{ $product->name }}"
-                                >
-                            @else
-                                <span class="image-placeholder" aria-hidden="true">
-                                    Photo coming soon
-                                </span>
+                                <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}">
                             @endif
                         </div>
 
                         <div class="product-card-content">
-                            <h2>{{ $product->name }}</h2>
-
+                            <div class="product-card-heading">
+                                <h2>{{ $product->name }}</h2>
+                                <span class="product-stock {{ $product->stock_quantity === 0 ? 'stock-out' : ($product->stock_quantity <= 5 ? 'stock-low' : '') }}">{{ $stockLabel }}</span>
+                            </div>
                             <div class="product-meta">
                                 <strong>₱{{ number_format((float) $product->price, 2) }}</strong>
-
-                                <span class="{{ $product->stock_quantity === 0 ? 'stock-out' : ($product->stock_quantity <= 5 ? 'stock-low' : '') }}">
-                                    {{ $stockLabel }} · {{ $product->stock_quantity }}
-                                </span>
+                                <span>{{ $product->stock_quantity }} in stock</span>
                             </div>
-
-                            <a
-                                class="select-product"
-                                href="{{ route('dashboard', ['product' => $product->id, 'search' => $search]) }}"
-                                aria-label="Preview {{ $product->name }}"
-                            >
-                                Preview product
+                            <a class="select-product select-product-button" href="{{ route('dashboard', ['product' => $product->id, 'search' => $search]) }}" aria-label="Select {{ $product->name }} for preview">
+                                Select item <span aria-hidden="true">+</span>
                             </a>
                         </div>
                     </article>
@@ -87,36 +61,41 @@
         @endif
     </section>
 
-    <aside class="sale-preview" aria-labelledby="sale-heading">
+    <aside class="sale-preview cart-panel" aria-labelledby="sale-heading">
         <div class="preview-heading">
             <div>
-                <h2 id="sale-heading">Record sale</h2>
-                <p>One product per sale</p>
+                <h2 id="sale-heading">Current Order</h2>
             </div>
-
-            <span class="preview-label">Preview</span>
         </div>
 
         @if ($selectedProduct)
-            <div class="selected-product">
-                <span>Selected product</span>
-                <strong>{{ $selectedProduct->name }}</strong>
-                <p>{{ $selectedProduct->stock_quantity }} available in stock</p>
+            <div class="selected-product cart-line">
+                <div class="cart-line-thumb" aria-hidden="true">
+                    @if ($selectedProduct->image)
+                        <img src="{{ asset('storage/'.$selectedProduct->image) }}" alt="">
+                    @endif
+                </div>
+                <div>
+                    <span>Selected item</span>
+                    <strong>{{ $selectedProduct->name }}</strong>
+                    <p>{{ $selectedProduct->stock_quantity }} available</p>
+                </div>
+                <strong class="cart-line-price">₱{{ number_format((float) $selectedProduct->price, 2) }}</strong>
             </div>
 
-            <div class="preview-line">
-                <span>Unit price</span>
-                <strong>₱{{ number_format((float) $selectedProduct->price, 2) }}</strong>
+            <div class="cart-summary">
+                <div><span>Unit price</span><strong>₱{{ number_format((float) $selectedProduct->price, 2) }}</strong></div>
+                <div><span>Total</span><strong>₱{{ number_format((float) $selectedProduct->price, 2) }}</strong></div>
             </div>
         @else
-            <p class="preview-empty">
-                Choose a product from the menu when products are available.
-            </p>
+            <p class="preview-empty">Choose a product from the menu to start an order.</p>
         @endif
 
-        <a class="select-product" href="{{ route('sales.create') }}">
-            Open Record Sale
-        </a>
+        @if ($selectedProduct)
+            <a class="cart-action" href="{{ route('sales.create', ['product_id' => $selectedProduct->id]) }}">Charge ₱{{ number_format((float) $selectedProduct->price, 2) }}</a>
+        @else
+            <span class="cart-action is-disabled" aria-disabled="true">Complete Order</span>
+        @endif
     </aside>
 </div>
 @endsection

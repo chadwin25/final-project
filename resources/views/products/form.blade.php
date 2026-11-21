@@ -1,6 +1,6 @@
 @extends('layouts.pos')
 
-@section('title', ($product->exists ? 'Edit product' : 'Add product').' · CampusBite POS')
+@section('title', ($product->exists ? 'Edit product' : 'Add product').' · CampusBite')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/products.css') }}">

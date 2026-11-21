@@ -1,6 +1,6 @@
 @extends('layouts.pos')
 
-@section('title', 'Products · CampusBite POS')
+@section('title', 'Products · CampusBite')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/products.css') }}">
