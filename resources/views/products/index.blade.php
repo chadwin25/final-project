@@ -62,15 +62,12 @@
                 <div class="product-thumb">
                     @if ($product->image)
                         <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}">
-                    @else
-                        {{-- Product image appears here after upload. --}}
-                        <span aria-hidden="true">No photo</span>
                     @endif
                 </div>
 
                 <div class="product-row-name">
                     <strong>{{ $product->name }}</strong>
-                    <small>#{{ $product->id }}</small>
+                    <small>{{ ucfirst(str_replace('_', '-', $product->category ?? 'food')) }} · #{{ $product->id }}</small>
                 </div>
 
                 <div class="product-row-detail">

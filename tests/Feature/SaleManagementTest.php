@@ -158,6 +158,120 @@ class SaleManagementTest extends TestCase
         $this->assertSame(3, $product->fresh()->stock_quantity);
     }
 
+    public function test_register_cart_lists_multiple_items_and_totals_them(): void
+    {
+        $staff = User::factory()->create();
+        $coffee = $this->createProduct(stock: 5, name: 'Coffee');
+        $potato = Product::create([
+            'name' => 'Potato',
+            'price' => '12.00',
+            'stock_quantity' => 8,
+        ]);
+
+        $this->actingAs($staff)
+            ->get(route('dashboard', [
+                'cart' => [
+                    $coffee->id => 2,
+                    $potato->id => 1,
+                ],
+            ]))
+            ->assertOk()
+            ->assertSee('Current Order')
+            ->assertSee('Coffee')
+            ->assertSee('Potato')
+            ->assertSee('₱31.00')
+            ->assertSee('Charge ₱31.00');
+    }
+
+    public function test_register_category_filters_are_clickable_and_filter_products(): void
+    {
+        $staff = User::factory()->create();
+        Product::create([
+            'name' => 'Rice Meal',
+            'category' => 'food',
+            'price' => '65.00',
+            'stock_quantity' => 5,
+        ]);
+        Product::create([
+            'name' => 'Calamansi Juice',
+            'category' => 'drinks',
+            'price' => '20.00',
+            'stock_quantity' => 8,
+        ]);
+
+        $this->actingAs($staff)
+            ->get(route('dashboard', ['category' => 'drinks']))
+            ->assertOk()
+            ->assertSee('All')
+            ->assertSee('Food')
+            ->assertSee('Drinks')
+            ->assertSee('Add-on')
+            ->assertSee('Calamansi Juice')
+            ->assertDontSee('Rice Meal');
+    }
+
+    public function test_staff_can_complete_a_multi_item_order_atomically(): void
+    {
+        $staff = User::factory()->create();
+        $coffee = $this->createProduct(stock: 5, name: 'Coffee');
+        $potato = Product::create([
+            'name' => 'Potato',
+            'price' => '12.00',
+            'stock_quantity' => 8,
+        ]);
+
+        $this->actingAs($staff)
+            ->post(route('sales.store'), [
+                'items' => [
+                    ['product_id' => $coffee->id, 'quantity' => 2],
+                    ['product_id' => $potato->id, 'quantity' => 3],
+                ],
+            ])
+            ->assertRedirect(route('dashboard'))
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('status', 'Order complete. 5 items charged.');
+
+        $this->assertDatabaseCount('sales', 2);
+        $this->assertDatabaseHas('sales', [
+            'product_id' => $coffee->id,
+            'quantity' => 2,
+            'total_price' => '19.00',
+        ]);
+        $this->assertDatabaseHas('sales', [
+            'product_id' => $potato->id,
+            'quantity' => 3,
+            'total_price' => '36.00',
+        ]);
+        $this->assertSame(3, $coffee->fresh()->stock_quantity);
+        $this->assertSame(5, $potato->fresh()->stock_quantity);
+    }
+
+    public function test_multi_item_order_rolls_back_when_any_line_exceeds_stock(): void
+    {
+        $staff = User::factory()->create();
+        $coffee = $this->createProduct(stock: 5, name: 'Coffee');
+        $potato = Product::create([
+            'name' => 'Potato',
+            'price' => '12.00',
+            'stock_quantity' => 1,
+        ]);
+
+        $this->actingAs($staff)
+            ->from(route('dashboard'))
+            ->post(route('sales.store'), [
+                'items' => [
+                    ['product_id' => $coffee->id, 'quantity' => 2],
+                    ['product_id' => $potato->id, 'quantity' => 2],
+                ],
+            ])
+            ->assertRedirect(route('dashboard'))
+            ->assertSessionHasErrors('items');
+
+        $this->assertDatabaseCount('sales', 0);
+        $this->assertSame(5, $coffee->fresh()->stock_quantity);
+        $this->assertSame(1, $potato->fresh()->stock_quantity);
+    }
+
     #[DataProvider('unlinkedCustomerInputs')]
     public function test_valid_sale_without_a_customer(array $customerInput): void
     {

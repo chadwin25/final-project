@@ -46,61 +46,104 @@ class SaleController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'product_id' => [
-                'required',
-                'integer',
-                Rule::exists('products', 'id')->whereNull('deleted_at'),
-            ],
-            'customer_id' => ['nullable', 'integer', 'exists:customers,id'],
-            'quantity' => ['required', 'integer', 'min:1'],
-        ], [
+        $isCartOrder = is_array($request->input('items'));
+        $productRule = [
+            'required',
+            'integer',
+            Rule::exists('products', 'id')->whereNull('deleted_at'),
+        ];
+        $rules = $isCartOrder
+            ? [
+                'items' => ['required', 'array', 'min:1', 'max:100'],
+                'items.*.product_id' => $productRule,
+                'items.*.quantity' => ['required', 'integer', 'min:1'],
+                'customer_id' => ['nullable', 'integer', 'exists:customers,id'],
+            ]
+            : [
+                'product_id' => $productRule,
+                'customer_id' => ['nullable', 'integer', 'exists:customers,id'],
+                'quantity' => ['required', 'integer', 'min:1'],
+            ];
+
+        $validated = $request->validate($rules, [
             'product_id.exists' => 'The selected product is archived or unavailable.',
+            'items.*.product_id.exists' => 'One of the selected products is archived or unavailable.',
             'quantity.required' => 'Enter a quantity to complete this order.',
             'quantity.integer' => 'Quantity must be a whole number.',
             'quantity.min' => 'Quantity must be at least 1.',
+            'items.required' => 'Add at least one item to the order.',
+            'items.min' => 'Add at least one item to the order.',
+            'items.*.quantity.required' => 'Every order item needs a quantity.',
+            'items.*.quantity.integer' => 'Order quantities must be whole numbers.',
+            'items.*.quantity.min' => 'Order quantities must be at least 1.',
         ]);
 
-        $saleDetails = DB::transaction(function () use ($validated, $request): array {
-            $product = Product::query()
-                ->whereKey($validated['product_id'])
+        $requestedLines = $isCartOrder
+            ? $validated['items']
+            : [[
+                'product_id' => $validated['product_id'],
+                'quantity' => $validated['quantity'],
+            ]];
+        $quantities = collect($requestedLines)
+            ->groupBy('product_id')
+            ->map(fn ($lines) => $lines->sum('quantity'))
+            ->sortKeys();
+
+        $saleDetails = DB::transaction(function () use ($quantities, $validated, $request, $isCartOrder): array {
+            $products = Product::query()
+                ->whereIn('id', $quantities->keys())
+                ->orderBy('id')
                 ->lockForUpdate()
-                ->first();
+                ->get()
+                ->keyBy('id');
 
-            if (! $product) {
+            if ($products->count() !== $quantities->count()) {
                 throw ValidationException::withMessages([
-                    'product_id' => 'The selected product is archived or unavailable.',
+                    $isCartOrder ? 'items' : 'product_id' => 'One or more selected products are archived or unavailable.',
                 ]);
             }
 
-            $quantity = (int) $validated['quantity'];
+            foreach ($quantities as $productId => $quantity) {
+                $product = $products->get($productId);
+                $quantity = (int) $quantity;
 
-            if ($quantity > $product->stock_quantity) {
-                throw ValidationException::withMessages([
-                    'quantity' => "Only {$product->stock_quantity} unit(s) are currently available.",
+                if ($quantity > $product->stock_quantity) {
+                    throw ValidationException::withMessages([
+                        $isCartOrder ? 'items' : 'quantity' => "Only {$product->stock_quantity} unit(s) of {$product->name} are currently available.",
+                    ]);
+                }
+
+                Sale::create([
+                    'product_id' => $product->id,
+                    'customer_id' => $validated['customer_id'] ?? null,
+                    'sold_by' => $request->user()->id,
+                    'quantity' => $quantity,
+                    'total_price' => number_format((float) $product->price * $quantity, 2, '.', ''),
                 ]);
+
+                $product->stock_quantity -= $quantity;
+                $product->save();
             }
-
-            Sale::create([
-                'product_id' => $product->id,
-                'customer_id' => $validated['customer_id'] ?? null,
-                'sold_by' => $request->user()->id,
-                'quantity' => $quantity,
-                'total_price' => number_format((float) $product->price * $quantity, 2, '.', ''),
-            ]);
-
-            $product->stock_quantity -= $quantity;
-            $product->save();
 
             return [
-                'product_name' => $product->name,
-                'stock_quantity' => $product->stock_quantity,
+                'item_count' => $quantities->sum(),
+                'single_product' => $quantities->count() === 1 ? $products->first() : null,
             ];
         });
 
-        return redirect()->route('sales.create')->with(
-            'status',
-            "Order complete. {$saleDetails['product_name']} has {$saleDetails['stock_quantity']} unit(s) remaining."
+        if ($isCartOrder) {
+            $itemLabel = $saleDetails['item_count'] === 1 ? 'item' : 'items';
+
+            return redirect()->route('dashboard')->with(
+                'status',
+                "Order complete. {$saleDetails['item_count']} {$itemLabel} charged."
+            );
+        }
+
+        $product = $saleDetails['single_product'];
+
+        return redirect()->route('sales.create')->with('status',
+            "Order complete. {$product->name} has {$product->stock_quantity} unit(s) remaining."
         );
     }
 }
