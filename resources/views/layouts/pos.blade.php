@@ -34,19 +34,20 @@
                 </svg>
                 <span>Register</span>
             </a>
+
             <a
-    class="nav-item {{ request()->routeIs('sales.create') ? 'is-active' : '' }}"
-    href="{{ route('sales.create') }}"
-    @if (request()->routeIs('sales.create')) aria-current="page" @endif
->
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-        <path d="M3 4h2l2.2 11h10.9l2-8H6"/>
-        <circle cx="9" cy="19" r="1"/>
-        <circle cx="17" cy="19" r="1"/>
-        <path d="M12 9v5M9.5 11.5h5"/>
-    </svg>
-    <span>Quick Order</span>
-</a>
+                class="nav-item {{ request()->routeIs('sales.create') ? 'is-active' : '' }}"
+                href="{{ route('sales.create') }}"
+                @if (request()->routeIs('sales.create')) aria-current="page" @endif
+            >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path d="M3 4h2l2.2 11h10.9l2-8H6"/>
+                    <circle cx="9" cy="19" r="1"/>
+                    <circle cx="17" cy="19" r="1"/>
+                    <path d="M12 9v5M9.5 11.5h5"/>
+                </svg>
+                <span>Quick Order</span>
+            </a>
 
             <a
                 class="nav-item {{ request()->routeIs('products.*') ? 'is-active' : '' }}"
@@ -94,6 +95,30 @@
                     <path d="M8 8h8M8 12h8"/>
                 </svg>
                 <span>Orders</span>
+            </a>
+
+            <a
+                class="nav-item {{ request()->routeIs('reports.sales') ? 'is-active' : '' }}"
+                href="{{ route('reports.sales') }}"
+                @if (request()->routeIs('reports.sales')) aria-current="page" @endif
+            >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path d="M4 19V5M4 19h17"/>
+                    <path d="m7 15 4-4 3 2 6-7"/>
+                </svg>
+                <span>Sales report</span>
+            </a>
+
+            <a
+                class="nav-item {{ request()->routeIs('reports.inventory') ? 'is-active' : '' }}"
+                href="{{ route('reports.inventory') }}"
+                @if (request()->routeIs('reports.inventory')) aria-current="page" @endif
+            >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path d="M3 7h18v13H3z"/>
+                    <path d="M3 7 5 3h14l2 4M8 11h8M8 15h8"/>
+                </svg>
+                <span>Inventory report</span>
             </a>
         </nav>
 
