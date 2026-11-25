@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\StaffController;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +34,12 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/sales', [SaleController::class, 'store'])
         ->name('sales.store');
+
+    Route::get('/reports/sales', [ReportController::class, 'sales'])
+        ->name('reports.sales');
+
+    Route::get('/reports/inventory', [ReportController::class, 'inventory'])
+        ->name('reports.inventory');
 
     Route::patch('/products/{product}/restore', [ProductController::class, 'restore'])
         ->name('products.restore');
