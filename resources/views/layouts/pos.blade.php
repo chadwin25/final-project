@@ -98,6 +98,18 @@
             </a>
 
             <a
+                class="nav-item {{ request()->routeIs('customer-orders.*') ? 'is-active' : '' }}"
+                href="{{ route('customer-orders.index') }}"
+                @if (request()->routeIs('customer-orders.*')) aria-current="page" @endif
+            >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path d="M4 4h16v16H4z"/>
+                    <path d="M8 8h8M8 12h8M8 16h5"/>
+                </svg>
+                <span>Customer orders</span>
+            </a>
+
+            <a
                 class="nav-item {{ request()->routeIs('reports.sales') ? 'is-active' : '' }}"
                 href="{{ route('reports.sales') }}"
                 @if (request()->routeIs('reports.sales')) aria-current="page" @endif
@@ -135,6 +147,7 @@
             <div>
                 <p class="topbar-date">{{ now('Asia/Manila')->format('l, F j, Y') }}</p>
             </div>
+
             <div class="topbar-actions">
                 <div class="cashier">
                     @if (auth()->user()->avatar)
@@ -150,6 +163,7 @@
                             {{ mb_strtoupper(mb_substr(auth()->user()->full_name, 0, 1)) }}
                         </span>
                     @endif
+
                     <span>
                         <strong>{{ auth()->user()->full_name }}</strong>
                         <small>Signed-in staff</small>
@@ -163,6 +177,7 @@
         </main>
     </div>
 </div>
+
 @stack('scripts')
 </body>
 </html>
