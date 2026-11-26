@@ -1,40 +1,45 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
-    <title>Log in · CampusBite</title>
+    <title>Staff log in · CampusBite</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/campusbite.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/customer-auth.css') }}">
 </head>
-<body class="login-page">
-<main class="login-layout">
-    <div class="login-header">
-        <a class="login-brand" href="{{ route('landing') }}" aria-label="CampusBite home">
-            <img class="brand-mark brand-mark-large" src="{{ asset('images/campusbite-mark.svg') }}" alt="">
+<body class="customer-auth">
+    <header class="customer-auth-header">
+        <a class="customer-auth-brand" href="{{ route('landing') }}">
+            <img src="{{ asset('images/campusbite-mark.svg') }}" alt="">
             <span>CampusBite</span>
         </a>
-        <a class="login-home-link" href="{{ route('landing') }}">← Back to home</a>
-    </div>
 
-    <section class="login-card" aria-labelledby="login-heading">
-        <h1 id="login-heading">Log in</h1>
-        <p class="login-intro">Use your staff account to open the counter.</p>
+        <a class="customer-auth-header-link" href="{{ route('customer.login') }}">
+            Customer log in
+        </a>
+    </header>
 
-        @if ($errors->any())
-            <div class="form-alert" role="alert">
-                Please check your sign-in details and try again.
-            </div>
-        @endif
+    <main class="customer-auth-main">
+        <section class="customer-auth-card" aria-labelledby="login-heading">
+            <h1 id="login-heading">Staff log in</h1>
+            <p class="customer-auth-intro">Sign in to manage the counter, menu, and orders.</p>
 
-        <form method="POST" action="{{ route('login.submit') }}" class="login-form">
-            @csrf
+            @if ($errors->any())
+                <div class="customer-auth-alert" role="alert">
+                    {{ $errors->first() }}
+                </div>
+            @endif
 
-            <div class="field">
+            @if (session('status'))
+                <div class="customer-auth-alert" role="status">
+                    {{ session('status') }}
+                </div>
+            @endif
+
+            <form class="customer-auth-form" method="POST" action="{{ route('login.submit') }}">
+                @csrf
+
                 <label for="username">Username</label>
                 <input
                     id="username"
@@ -42,17 +47,10 @@
                     type="text"
                     value="{{ old('username') }}"
                     autocomplete="username"
-                    maxlength="50"
                     required
                     autofocus
-                    aria-invalid="{{ $errors->has('username') ? 'true' : 'false' }}"
                 >
-                @error('username')
-                    <p class="field-error">{{ $message }}</p>
-                @enderror
-            </div>
 
-            <div class="field">
                 <label for="password">Password</label>
                 <input
                     id="password"
@@ -60,18 +58,16 @@
                     type="password"
                     autocomplete="current-password"
                     required
-                    aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}"
                 >
-                @error('password')
-                    <p class="field-error">{{ $message }}</p>
-                @enderror
-            </div>
 
-            <button class="primary-button" type="submit">Log in</button>
-        </form>
-    </section>
+                <button class="customer-auth-button" type="submit">Staff log in</button>
+            </form>
 
-    <p class="login-footer">Authorized staff access only</p>
-</main>
+            <p class="customer-auth-footer">
+                Ordering as a customer?
+                <a href="{{ route('customer.login') }}">Customer log in</a>
+            </p>
+        </section>
+    </main>
 </body>
 </html>
