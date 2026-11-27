@@ -1,6 +1,6 @@
 @extends('layouts.pos')
 
-@section('title', 'Orders · CampusBite')
+@section('title', 'Sales history · CampusBite')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/sales-history.css') }}">
@@ -9,16 +9,16 @@
 @section('content')
 <div class="management-heading">
     <div>
-        <h1>Orders</h1>
-        <p>Review completed orders, newest first.</p>
+        <h1>Sales history</h1>
+        <p>Review completed sales, newest first.</p>
     </div>
 </div>
 
 @if ($sales->isEmpty())
     <div class="management-empty">
-        <h2>No orders yet</h2>
-        <p>Completed orders will appear here.</p>
-        <a href="{{ route('sales.create') }}">Open Quick Order</a>
+        <h2>No sales yet</h2>
+        <p>Completed sales will appear here.</p>
+        <a href="{{ route('dashboard') }}">Open point of sale</a>
     </div>
 @else
     <div class="sales-history-table-wrap">
@@ -64,7 +64,7 @@
     </div>
 
     @if ($sales->hasPages())
-        <nav class="management-pagination" aria-label="Order history pages">
+        <nav class="management-pagination" aria-label="Sales history pages">
             @if ($sales->onFirstPage())
                 <span>Previous</span>
             @else

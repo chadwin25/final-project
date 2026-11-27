@@ -2,12 +2,25 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('email', 100)->nullable()->unique();
+            $table->string('role', 20)->default('staff');
+        });
+
+        DB::table('users')->orderBy('id')->eachById(function ($user) {
+            DB::table('users')->where('id', $user->id)->update([
+                'email' => 'legacy-'.$user->id.'@campusbite.test',
+                'role' => $user->username === 'admin' ? 'admin' : 'staff',
+            ]);
+        });
+
         Schema::table('customers', function (Blueprint $table) {
             $table->string('password')->nullable()->after('email');
         });
@@ -60,6 +73,11 @@ return new class extends Migration
 
         Schema::table('customers', function (Blueprint $table) {
             $table->dropColumn('password');
+        });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropUnique(['email']);
+            $table->dropColumn(['email', 'role']);
         });
     }
 };

@@ -47,7 +47,7 @@
             <p><strong>Total: ₱{{ number_format((float) $order->total_price, 2) }}</strong></p>
         </article>
     @empty
-        <p>Wala ka pang orders.</p>
+        <p>You have no orders yet.</p>
     @endforelse
 
     {{ $orders->links() }}

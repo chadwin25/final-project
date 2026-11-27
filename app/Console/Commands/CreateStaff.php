@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class CreateStaff extends Command
 {
@@ -14,7 +15,7 @@ class CreateStaff extends Command
 
     public function handle(): int
     {
-        $username = trim((string) $this->ask('Username'));
+        $email = mb_strtolower(trim((string) $this->ask('Email address')));
         $fullName = trim((string) $this->ask('Full name'));
         $password = (string) $this->secret('Password (at least 12 characters)');
         $confirmation = (string) $this->secret('Confirm password');
@@ -27,12 +28,12 @@ class CreateStaff extends Command
 
         $validator = Validator::make(
             [
-                'username' => $username,
+                'email' => $email,
                 'full_name' => $fullName,
                 'password' => $password,
             ],
             [
-                'username' => ['required', 'string', 'alpha_dash', 'min:3', 'max:50', 'unique:users,username'],
+                'email' => ['required', 'email:rfc', 'max:100', 'unique:users,email', 'unique:customers,email'],
                 'full_name' => ['required', 'string', 'max:100'],
                 'password' => ['required', 'string', 'min:12', 'max:255'],
             ]
@@ -49,12 +50,13 @@ class CreateStaff extends Command
         }
 
         User::create([
-            'username' => $username,
+            'username' => (string) Str::uuid(),
+            'email' => $email,
             'full_name' => $fullName,
             'password' => $password,
         ]);
 
-        $this->info("Staff account '{$username}' created.");
+        $this->info("Staff account '{$email}' created.");
 
         return self::SUCCESS;
     }

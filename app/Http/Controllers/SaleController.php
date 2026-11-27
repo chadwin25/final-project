@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Sale;
 use Illuminate\Contracts\View\View;
@@ -23,25 +22,6 @@ class SaleController extends Controller
             ->paginate(15);
 
         return view('sales.history', compact('sales'));
-    }
-
-    public function create(Request $request): View
-    {
-        $products = Product::query()
-            ->where('stock_quantity', '>', 0)
-            ->orderBy('name')
-            ->get(['id', 'name', 'price', 'stock_quantity']);
-
-        $customers = Customer::query()
-            ->orderBy('full_name')
-            ->get(['id', 'full_name']);
-
-        $requestedProductId = $request->integer('product_id');
-        $selectedProductId = $products->contains('id', $requestedProductId)
-            ? $requestedProductId
-            : null;
-
-        return view('sales.create', compact('products', 'customers', 'selectedProductId'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -142,7 +122,7 @@ class SaleController extends Controller
 
         $product = $saleDetails['single_product'];
 
-        return redirect()->route('sales.create')->with('status',
+        return redirect()->route('dashboard')->with('status',
             "Order complete. {$product->name} has {$product->stock_quantity} unit(s) remaining."
         );
     }

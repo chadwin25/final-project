@@ -54,19 +54,19 @@
     </div>
 
     <div class="staff-field">
-        <label for="username">Username</label>
+        <label for="email">Email address</label>
         <input
-            id="username"
-            name="username"
-            type="text"
-            maxlength="50"
-            value="{{ old('username', $staff->username) }}"
-            autocomplete="username"
+            id="email"
+            name="email"
+            type="email"
+            maxlength="100"
+            value="{{ old('email', $staff->email) }}"
+            autocomplete="email"
             required
-            aria-invalid="{{ $errors->has('username') ? 'true' : 'false' }}"
+            aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}"
         >
-        <p class="staff-help">Letters, numbers, dashes, and underscores only.</p>
-        @error('username')
+        <p class="staff-help">This email is used to log in.</p>
+        @error('email')
             <p class="staff-field-error">{{ $message }}</p>
         @enderror
     </div>

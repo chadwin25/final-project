@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
-    <title>Customer log in · CampusBite</title>
+    <title>Login · CampusBite</title>
     <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
     <link rel="stylesheet" href="{{ asset('css/customer-auth.css') }}">
 </head>
@@ -15,15 +15,15 @@
             <span>CampusBite</span>
         </a>
 
-        <a class="customer-auth-header-link" href="{{ route('customer.signup') }}">
-            Sign up
+        <a class="customer-auth-header-link" href="{{ route('login') }}">
+            Back to staff login
         </a>
     </header>
 
     <main class="customer-auth-main">
         <section class="customer-auth-card" aria-labelledby="login-heading">
-            <h1 id="login-heading">Customer log in</h1>
-            <p class="customer-auth-intro">Log in to browse the menu and manage your orders.</p>
+            <h1 id="login-heading">Login</h1>
+            <p class="customer-auth-intro">Sign in to browse the menu and manage your orders.</p>
 
             @if ($errors->any())
                 <div class="customer-auth-alert" role="alert">
@@ -54,7 +54,7 @@
                     required
                 >
 
-                <button class="customer-auth-button" type="submit">Log in</button>
+                <button class="customer-auth-button" type="submit">Login</button>
             </form>
 
             <p class="customer-auth-footer">

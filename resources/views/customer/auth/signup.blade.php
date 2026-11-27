@@ -20,7 +20,7 @@
     <main class="customer-auth-main">
         <section class="customer-auth-card" aria-labelledby="signup-heading">
             <h1 id="signup-heading">Create your account</h1>
-            <p class="customer-auth-intro">Sign up to browse the menu and place your orders.</p>
+            <p class="customer-auth-intro">Create a customer account to browse the menu and place orders. Staff accounts are created by the admin.</p>
 
             @if ($errors->any())
                 <div class="customer-auth-alert" role="alert">

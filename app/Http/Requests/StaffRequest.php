@@ -10,7 +10,14 @@ class StaffRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check();
+        return $this->user('web')?->can('manage-staff') === true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->input('email'))) {
+            $this->merge(['email' => mb_strtolower(trim($this->input('email')))]);
+        }
     }
 
     public function rules(): array
@@ -18,12 +25,12 @@ class StaffRequest extends FormRequest
         $staff = $this->route('staff');
 
         return [
-            'username' => [
+            'email' => [
                 'required',
-                'string',
-                'max:50',
-                'alpha_dash',
-                Rule::unique('users', 'username')->ignore($staff),
+                'email:rfc',
+                'max:100',
+                Rule::unique('users', 'email')->ignore($staff),
+                Rule::unique('customers', 'email'),
             ],
             'full_name' => ['required', 'string', 'max:100'],
             'password' => [
@@ -46,7 +53,6 @@ class StaffRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'username.alpha_dash' => 'Use letters, numbers, dashes, or underscores for the username.',
             'password.confirmed' => 'The password confirmation does not match.',
             'avatar.mimes' => 'Choose a JPG, PNG, or WebP image.',
             'avatar.extensions' => 'The image filename must end in .jpg, .jpeg, .png, or .webp.',

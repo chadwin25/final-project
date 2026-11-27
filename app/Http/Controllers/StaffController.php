@@ -8,6 +8,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Throwable;
 
 class StaffController extends Controller
@@ -22,7 +23,7 @@ class StaffController extends Controller
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($matching) use ($search) {
                     $matching->where('full_name', 'like', '%'.$search.'%')
-                        ->orWhere('username', 'like', '%'.$search.'%');
+                        ->orWhere('email', 'like', '%'.$search.'%');
                 });
             })
             ->orderBy('full_name')
@@ -35,13 +36,14 @@ class StaffController extends Controller
     public function create(): View
     {
         return view('staff.form', [
-            'staff' => new User(),
+            'staff' => new User,
         ]);
     }
 
     public function store(StaffRequest $request): RedirectResponse
     {
         $data = $request->safe()->except(['avatar', 'password_confirmation']);
+        $data['username'] = (string) Str::uuid();
         $newAvatar = null;
 
         try {

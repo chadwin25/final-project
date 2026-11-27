@@ -9,7 +9,7 @@
 <body>
 <main style="max-width:520px;margin:50px auto;padding:24px;">
     <h1>Create customer account</h1>
-    <p>Mag-sign up para makapag-order online.</p>
+    <p>Sign up to place orders online.</p>
 
     <form method="POST" action="{{ route('customer.signup.submit') }}">
         @csrf

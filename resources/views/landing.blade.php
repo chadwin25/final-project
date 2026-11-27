@@ -14,6 +14,12 @@
     <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
 </head>
 <body class="landing-page">
+    @php
+        $staffSignedIn = auth('web')->check();
+        $customerSignedIn = auth('customer')->check();
+        $signedIn = $staffSignedIn || $customerSignedIn;
+        $workspaceRoute = $staffSignedIn ? 'dashboard' : 'customer.home';
+    @endphp
     <header class="landing-nav">
         <div class="landing-container landing-nav-inner">
             <a class="landing-brand" href="#top" aria-label="CampusBite home">
@@ -25,11 +31,10 @@
                 <a href="#features">Features</a>
                 <a href="#how-it-works">How it works</a>
                 <a href="#faq">FAQ</a>
-                <a href="{{ route('customer.login') }}">Customer log in</a>
             </nav>
 
-            <a class="landing-button landing-button-small" href="{{ route('login') }}">
-                Staff log in
+            <a class="landing-button landing-button-small" href="{{ route($signedIn ? $workspaceRoute : 'login') }}">
+                {{ $signedIn ? ($staffSignedIn ? 'Open POS' : 'Open customer portal') : 'Login' }}
             </a>
         </div>
     </header>
@@ -44,15 +49,14 @@
                     orders, and stock, while customers can browse the menu and place orders online.
                 </p>
 
+                @unless ($signedIn)
                 <div class="landing-hero-actions">
-                    <a class="landing-button" href="{{ route('login') }}">Staff log in</a>
-                    <a class="landing-button landing-button-secondary" href="{{ route('customer.login') }}">
-                        Customer log in
-                    </a>
+                    <a class="landing-button" href="{{ route('customer.home') }}">Order Now</a>
                     <a class="landing-button landing-button-secondary" href="{{ route('customer.signup') }}">
                         Create customer account
                     </a>
                 </div>
+                @endunless
 
                 <ul class="landing-highlights" aria-label="CampusBite highlights">
                     <li>
@@ -160,26 +164,22 @@
             </div>
         </section>
 
+        @unless ($signedIn)
         <section class="landing-cta-section" aria-labelledby="cta-heading">
             <div class="landing-container">
                 <div class="landing-cta-panel">
                     <h2 id="cta-heading">Ready to use CampusBite?</h2>
-                    <p>Choose the sign-in option that matches your account.</p>
+                    <p>Browse the customer menu and submit an order for staff confirmation.</p>
 
                     <div class="landing-hero-actions">
-                        <a class="landing-button landing-button-inverted" href="{{ route('login') }}">
-                            Staff log in
-                        </a>
-                        <a class="landing-button landing-button-inverted" href="{{ route('customer.login') }}">
-                            Customer log in
-                        </a>
-                        <a class="landing-button landing-button-inverted" href="{{ route('customer.signup') }}">
-                            Create customer account
+                        <a class="landing-button landing-button-inverted" href="{{ route('customer.home') }}">
+                            Order Now
                         </a>
                     </div>
                 </div>
             </div>
         </section>
+        @endunless
     </main>
 
     <footer class="landing-footer">
@@ -201,12 +201,13 @@
                     <a href="#faq">FAQ</a>
                 </div>
 
+                @unless ($signedIn)
                 <div class="landing-footer-column">
                     <h2>Account</h2>
-                    <a href="{{ route('login') }}">Staff log in</a>
-                    <a href="{{ route('customer.login') }}">Customer log in</a>
+                    <a href="{{ route('login') }}">Login</a>
                     <a href="{{ route('customer.signup') }}">Create customer account</a>
                 </div>
+                @endunless
             </div>
 
             <div class="landing-footer-bottom">

@@ -37,7 +37,7 @@ class StaffCustomerOrderController extends Controller
 
             if (in_array($order->status, ['completed', 'cancelled'], true)) {
                 throw ValidationException::withMessages([
-                    'action' => 'Tapos na ang order na ito at hindi na mababago.',
+                    'action' => 'This order is completed or cancelled and can no longer be changed.',
                 ]);
             }
 
@@ -51,7 +51,7 @@ class StaffCustomerOrderController extends Controller
             if ($data['action'] === 'preparing') {
                 if ($order->payment_status !== 'paid') {
                     throw ValidationException::withMessages([
-                        'action' => 'I-confirm muna ang bayad bago ihanda ang order.',
+                        'action' => 'Confirm payment before preparing the order.',
                     ]);
                 }
 
@@ -64,7 +64,7 @@ class StaffCustomerOrderController extends Controller
             if ($data['action'] === 'ready') {
                 if ($order->status !== 'preparing') {
                     throw ValidationException::withMessages([
-                        'action' => 'I-set muna sa Preparing bago markahang Ready.',
+                        'action' => 'Set the order to Preparing before marking it Ready.',
                     ]);
                 }
 
@@ -77,7 +77,7 @@ class StaffCustomerOrderController extends Controller
             if ($data['action'] === 'complete') {
                 if ($order->status !== 'ready' || $order->payment_status !== 'paid') {
                     throw ValidationException::withMessages([
-                        'action' => 'Dapat paid at ready muna ang order bago i-complete.',
+                        'action' => 'The order must be paid and ready before it can be completed.',
                     ]);
                 }
 
@@ -101,7 +101,7 @@ class StaffCustomerOrderController extends Controller
             if ($data['action'] === 'cancel') {
                 if ($order->payment_status === 'paid') {
                     throw ValidationException::withMessages([
-                        'action' => 'Paid na ang order. Sundin muna ang refund process bago ito kanselahin.',
+                        'action' => 'This order is already paid. Follow the refund process before cancelling it.',
                     ]);
                 }
 
@@ -125,6 +125,6 @@ class StaffCustomerOrderController extends Controller
         });
 
         return redirect()->route('customer-orders.index')
-            ->with('status', 'Na-update ang customer order.');
+            ->with('status', 'Customer order updated.');
     }
 }

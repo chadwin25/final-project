@@ -55,7 +55,7 @@
         <h1>Menu</h1>
 
         @if ($products->isEmpty())
-            <p>Walang available na produkto ngayon.</p>
+            <p>No products are available right now.</p>
         @else
             <div class="products">
                 @foreach ($products as $product)
@@ -96,7 +96,7 @@
                 </form>
             </div>
         @empty
-            <p>Wala pang laman ang cart mo.</p>
+            <p>Your cart is empty.</p>
         @endforelse
 
         <hr>
@@ -121,7 +121,7 @@
                 <div id="gcash-fields" hidden>
                     <label for="payment_reference">GCash reference number</label>
                     <input id="payment_reference" name="payment_reference" maxlength="100">
-                    <p>Manual na ive-verify ng staff ang GCash payment.</p>
+                    <p>Staff will verify your GCash payment.</p>
                 </div>
 
                 <button type="submit">Place order</button>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\Product;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -54,6 +55,7 @@ class DashboardController extends Controller
 
             if (! $product || $product->stock_quantity < 1) {
                 unset($cartQuantities[$productId]);
+
                 continue;
             }
 
@@ -68,6 +70,7 @@ class DashboardController extends Controller
 
         return view('dashboard', [
             'products' => $products,
+            'customers' => Customer::orderBy('full_name')->get(['id', 'full_name']),
             'search' => $search,
             'category' => $category,
             'cartQuantities' => $cartQuantities,

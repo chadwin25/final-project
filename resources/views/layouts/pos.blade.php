@@ -32,21 +32,7 @@
                     <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V10Z"/>
                     <path d="M9 21v-7h6v7"/>
                 </svg>
-                <span>Register</span>
-            </a>
-
-            <a
-                class="nav-item {{ request()->routeIs('sales.create') ? 'is-active' : '' }}"
-                href="{{ route('sales.create') }}"
-                @if (request()->routeIs('sales.create')) aria-current="page" @endif
-            >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                    <path d="M3 4h2l2.2 11h10.9l2-8H6"/>
-                    <circle cx="9" cy="19" r="1"/>
-                    <circle cx="17" cy="19" r="1"/>
-                    <path d="M12 9v5M9.5 11.5h5"/>
-                </svg>
-                <span>Quick Order</span>
+                <span>Point of sale</span>
             </a>
 
             <a
@@ -73,6 +59,7 @@
                 <span>Customers</span>
             </a>
 
+            @can('manage-staff')
             <a
                 class="nav-item {{ request()->routeIs('staff.*') ? 'is-active' : '' }}"
                 href="{{ route('staff.index') }}"
@@ -84,6 +71,7 @@
                 </svg>
                 <span>Staff</span>
             </a>
+            @endcan
 
             <a
                 class="nav-item {{ request()->routeIs('sales.history') ? 'is-active' : '' }}"
@@ -94,7 +82,7 @@
                     <path d="M5 3h14v18l-3-2-4 2-4-2-3 2V3Z"/>
                     <path d="M8 8h8M8 12h8"/>
                 </svg>
-                <span>Orders</span>
+                <span>Sales history</span>
             </a>
 
             <a

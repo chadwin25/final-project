@@ -64,3 +64,19 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## CampusBite uploaded images
+
+JPG, JPEG, PNG, and WebP files in `storage/app/public/products` and `storage/app/public/avatars` are eligible for Git commits. Include those folders in the commit and upload them with the application. `public/storage` is a local junction, so it remains ignored.
+
+For InfinityFree, upload the project into `htdocs`, keeping the existing `public/.htaccess`. In the hosting account's `htdocs/.htaccess`, use these rules to serve the public pages and uploaded images without a junction:
+
+```apache
+RewriteEngine On
+RewriteRule ^storage/((?:products|avatars)/[A-Za-z0-9]+\.(?:jpe?g|png|webp))$ /storage/app/public/$1 [END]
+RewriteRule (.*) /public/$1 [L]
+```
+
+Import the local MySQL database through phpMyAdmin too: product records and their image filenames are stored in the database, not Git. Set the deployed `APP_URL` to the site's HTTPS URL and `APP_DEBUG=false` in its private `.env`. Later uploads made on the hosted site must be backed up separately.
+
+See [InfinityFree's Laravel setup guide](https://forum.infinityfree.com/t/how-to-install-a-laravel-site-on-infinityfree/118578).

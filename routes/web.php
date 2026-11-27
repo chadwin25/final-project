@@ -13,9 +13,7 @@ use App\Http\Middleware\EnsureCustomerIsAuthenticated;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return auth()->check()
-        ? redirect()->route('dashboard')
-        : view('landing');
+    return view('landing');
 })->name('landing');
 
 Route::get('/customer/signup', [CustomerPortalController::class, 'showSignup'])
@@ -46,11 +44,11 @@ Route::middleware('guest')->group(function () {
         ->name('login.submit');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:web')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
-    Route::get('/sales/create', [SaleController::class, 'create'])
+    Route::redirect('/sales/create', '/dashboard')
         ->name('sales.create');
 
     Route::get('/sales/history', [SaleController::class, 'index'])
@@ -78,9 +76,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('customers', CustomerController::class)->except('show');
 
     Route::patch('/staff/{staff}/restore', [StaffController::class, 'restore'])
+        ->middleware('can:manage-staff')
         ->name('staff.restore');
 
-    Route::resource('staff', StaffController::class)->except('show');
+    Route::resource('staff', StaffController::class)->except('show')->middleware('can:manage-staff');
 
     Route::post('/logout', [AuthController::class, 'logout'])
         ->name('logout');

@@ -22,9 +22,13 @@ class CustomerPortalController extends Controller
 
     public function signup(Request $request): RedirectResponse
     {
+        if (is_string($request->input('email'))) {
+            $request->merge(['email' => mb_strtolower(trim($request->input('email')))]);
+        }
+
         $data = $request->validate([
             'full_name' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'email:rfc', 'max:100', 'unique:customers,email'],
+            'email' => ['required', 'email:rfc', 'max:100', 'unique:customers,email', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'max:20'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
@@ -32,6 +36,7 @@ class CustomerPortalController extends Controller
         $customer = Customer::create($data);
 
         Auth::guard('customer')->login($customer);
+        Auth::guard('web')->logout();
         $request->session()->regenerate();
 
         return redirect()->route('customer.home');
@@ -44,6 +49,10 @@ class CustomerPortalController extends Controller
 
     public function login(Request $request): RedirectResponse
     {
+        if (is_string($request->input('email'))) {
+            $request->merge(['email' => mb_strtolower(trim($request->input('email')))]);
+        }
+
         $credentials = $request->validate([
             'email' => ['required', 'email:rfc'],
             'password' => ['required', 'string'],
@@ -51,10 +60,11 @@ class CustomerPortalController extends Controller
 
         if (! Auth::guard('customer')->attempt($credentials)) {
             return back()
-                ->withErrors(['email' => 'Hindi nagtugma ang email at password.'])
+                ->withErrors(['email' => 'The email or password is incorrect.'])
                 ->onlyInput('email');
         }
 
+        Auth::guard('web')->logout();
         $request->session()->regenerate();
 
         return redirect()->route('customer.home');
@@ -68,10 +78,18 @@ class CustomerPortalController extends Controller
         return redirect()->route('landing');
     }
 
-    public function home(): View
+    public function home(Request $request): View
     {
+        $search = $request->query('search', '');
+        $search = is_string($search) ? mb_substr(trim($search), 0, 100) : '';
+        $category = in_array($request->query('category'), ['food', 'drinks', 'add_on'], true)
+            ? $request->query('category')
+            : 'all';
+
         $products = Product::query()
             ->where('stock_quantity', '>', 0)
+            ->when($category !== 'all', fn ($query) => $query->where('category', $category))
+            ->when($search !== '', fn ($query) => $query->where('name', 'like', '%'.$search.'%'))
             ->orderBy('name')
             ->get();
 
@@ -100,7 +118,9 @@ class CustomerPortalController extends Controller
         return view('customer.home', compact(
             'products',
             'cartLines',
-            'cartTotal'
+            'cartTotal',
+            'search',
+            'category'
         ));
     }
 
@@ -112,7 +132,7 @@ class CustomerPortalController extends Controller
 
         if ($product->stock_quantity < $data['quantity']) {
             throw ValidationException::withMessages([
-                'quantity' => "Hanggang {$product->stock_quantity} lang ang available na stock.",
+                'quantity' => "Only {$product->stock_quantity} items are in stock. Choose a smaller quantity.",
             ]);
         }
 
@@ -121,14 +141,14 @@ class CustomerPortalController extends Controller
 
         if ($newQuantity > $product->stock_quantity) {
             throw ValidationException::withMessages([
-                'quantity' => "Hanggang {$product->stock_quantity} lang ang available na stock.",
+                'quantity' => "Only {$product->stock_quantity} items are in stock. Choose a smaller quantity.",
             ]);
         }
 
         $cart[$product->id] = $newQuantity;
         session(['customer_cart' => $cart]);
 
-        return back()->with('status', 'Naidagdag sa cart ang '.$product->name.'.');
+        return back()->with('status', $product->name.' was added to your cart.');
     }
 
     public function updateCart(Request $request, Product $product): RedirectResponse
@@ -138,17 +158,18 @@ class CustomerPortalController extends Controller
         ]);
 
         $cart = session('customer_cart', []);
+        $quantity = (int) $data['quantity'];
 
-        if ($data['quantity'] === 0) {
+        if ($quantity === 0) {
             unset($cart[$product->id]);
         } else {
-            if ($data['quantity'] > $product->stock_quantity) {
+            if ($quantity > $product->stock_quantity) {
                 throw ValidationException::withMessages([
-                    'quantity' => "Hanggang {$product->stock_quantity} lang ang available na stock.",
+                    'quantity' => "Only {$product->stock_quantity} items are in stock. Choose a smaller quantity.",
                 ]);
             }
 
-            $cart[$product->id] = $data['quantity'];
+            $cart[$product->id] = $quantity;
         }
 
         session(['customer_cart' => $cart]);
@@ -162,7 +183,7 @@ class CustomerPortalController extends Controller
 
         if (empty($cart)) {
             return redirect()->route('customer.home')
-                ->withErrors(['cart' => 'Magdagdag muna ng produkto sa cart.']);
+                ->withErrors(['cart' => 'Add a product to your cart before checking out.']);
         }
 
         $validated = $request->validate([
@@ -176,7 +197,7 @@ class CustomerPortalController extends Controller
             && trim((string) ($validated['payment_reference'] ?? '')) === ''
         ) {
             throw ValidationException::withMessages([
-                'payment_reference' => 'Ilagay ang GCash reference number.',
+                'payment_reference' => 'Enter the GCash reference number.',
             ]);
         }
 
@@ -192,7 +213,7 @@ class CustomerPortalController extends Controller
 
             if ($products->count() !== count($cart)) {
                 throw ValidationException::withMessages([
-                    'cart' => 'May produktong hindi na available. Tingnan ulit ang menu.',
+                    'cart' => 'An item in your cart is no longer available. Review the menu and update your cart.',
                 ]);
             }
 
@@ -204,7 +225,7 @@ class CustomerPortalController extends Controller
 
                 if ($quantity < 1 || $quantity > $product->stock_quantity) {
                     throw ValidationException::withMessages([
-                        'cart' => "Hindi sapat ang stock para sa {$product->name}.",
+                        'cart' => "There is not enough stock for {$product->name}. Reduce the quantity in your cart.",
                     ]);
                 }
 
@@ -219,7 +240,7 @@ class CustomerPortalController extends Controller
 
                 if ($amountTendered < $total) {
                     throw ValidationException::withMessages([
-                        'amount_tendered' => 'Kulang ang cash na inilagay kumpara sa total.',
+                        'amount_tendered' => 'The cash amount must cover the order total.',
                     ]);
                 }
 
@@ -264,7 +285,7 @@ class CustomerPortalController extends Controller
         session()->forget('customer_cart');
 
         return redirect()->route('customer.orders')
-            ->with('status', 'Na-place ang order '.$order->order_code.'. Hintayin ang staff confirmation.');
+            ->with('status', 'Order '.$order->order_code.' was placed and is awaiting staff confirmation.');
     }
 
     public function orders(): View

@@ -1,6 +1,6 @@
 @extends('layouts.pos')
 
-@section('title', 'Register · CampusBite')
+@section('title', 'Point of sale · CampusBite')
 
 @section('content')
 <div class="dashboard-page">
@@ -158,6 +158,13 @@
                     <input type="hidden" name="items[{{ $index }}][product_id]" value="{{ $line['product']->id }}">
                     <input type="hidden" name="items[{{ $index }}][quantity]" value="{{ $line['quantity'] }}">
                 @endforeach
+                <label for="customer_id">Customer <span>(optional)</span></label>
+                <select id="customer_id" name="customer_id">
+                    <option value="">Walk-in customer</option>
+                    @foreach ($customers as $customer)
+                        <option value="{{ $customer->id }}" @selected((string) old('customer_id') === (string) $customer->id)>{{ $customer->full_name }}</option>
+                    @endforeach
+                </select>
                 <button class="cart-action" type="submit">Charge ₱{{ number_format($cartTotal, 2) }}</button>
             </form>
         @else

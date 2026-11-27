@@ -48,7 +48,7 @@
             type="search"
             value="{{ $search }}"
             maxlength="100"
-            placeholder="Search name or username"
+            placeholder="Search name or email"
         >
         <button type="submit">Search</button>
     </div>
@@ -83,12 +83,12 @@
 
                 <div class="staff-identity">
                     <strong>{{ $member->full_name }}</strong>
-                    <small>Staff #{{ $member->id }}</small>
+                    <small>{{ ucfirst($member->role) }} #{{ $member->id }}</small>
                 </div>
 
                 <div class="staff-username">
-                    <span>Username</span>
-                    <strong>{{ $member->username }}</strong>
+                    <span>Email</span>
+                    <strong>{{ $member->email }}</strong>
                 </div>
 
                 <div class="staff-actions">

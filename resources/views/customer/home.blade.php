@@ -3,43 +3,66 @@
 @section('title', 'Menu · CampusBite')
 
 @section('content')
-<div class="customer-dashboard">
-    <section class="customer-menu-area" aria-labelledby="menu-heading">
-        <div class="section-heading customer-heading">
+<div class="dashboard-page">
+    <section class="menu-area" aria-labelledby="menu-heading">
+        <div class="section-heading dashboard-heading">
             <div>
                 <h1 id="menu-heading">Today’s menu</h1>
-                <p>Browse the menu and add items to your order.</p>
             </div>
         </div>
 
         @if (session('status'))
-            <div class="customer-notice customer-notice-success" role="status">
+            <p class="success-message" role="status">
                 {{ session('status') }}
-            </div>
+            </p>
         @endif
 
         @if ($errors->any())
-            <div class="customer-notice customer-notice-error" role="alert">
+            <div class="form-alert" role="alert">
                 @foreach ($errors->all() as $error)
                     <p>{{ $error }}</p>
                 @endforeach
             </div>
         @endif
 
+        <form class="search-form menu-search" method="GET" action="{{ route('customer.home') }}" role="search">
+            <label class="visually-hidden" for="menu-search">Search menu</label>
+            @if ($category !== 'all')
+                <input type="hidden" name="category" value="{{ $category }}">
+            @endif
+            <div class="search-controls">
+                <span class="search-icon" aria-hidden="true">⌕</span>
+                <input id="menu-search" name="search" type="search" value="{{ $search }}" placeholder="Search the menu" maxlength="100">
+                <button type="submit">Search</button>
+            </div>
+        </form>
+
+        <nav class="menu-filters" aria-label="Menu categories">
+            @foreach (['all' => 'All', 'food' => 'Food', 'drinks' => 'Drinks', 'add_on' => 'Add-on'] as $filterValue => $filterLabel)
+                <a
+                    href="{{ route('customer.home', array_filter(['search' => $search, 'category' => $filterValue === 'all' ? null : $filterValue], fn ($value) => $value !== null && $value !== '')) }}"
+                    class="{{ $category === $filterValue ? 'is-active' : '' }}"
+                    @if ($category === $filterValue) aria-current="page" @endif
+                >{{ $filterLabel }}</a>
+            @endforeach
+        </nav>
+
         @if ($products->isEmpty())
             <div class="empty-state">
-                <h2>No items available</h2>
-                <p>Please check again later.</p>
+                <h2>No matching products</h2>
+                <p>Try another search or category, or check again later.</p>
+                <a href="{{ route('customer.home') }}">Clear search</a>
             </div>
         @else
-            <div class="customer-product-grid">
+            <div class="product-grid">
                 @foreach ($products as $product)
                     @php
                         $stockLabel = $product->stock_quantity <= 5 ? 'Low stock' : 'Available';
+                        $quantityInCart = (int) session('customer_cart.'.$product->id, 0);
                     @endphp
 
-                    <article class="customer-product-card">
-                        <div class="customer-product-image">
+                    <article class="product-card">
+                        <div class="product-image">
                             @if ($product->image)
                                 <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}">
                             @else
@@ -47,38 +70,28 @@
                             @endif
                         </div>
 
-                        <div class="customer-product-content">
-                            <div class="customer-product-heading">
+                        <div class="product-card-content">
+                            <div class="product-card-heading">
                                 <h2>{{ $product->name }}</h2>
-                                <span class="customer-stock {{ $product->stock_quantity <= 5 ? 'is-low' : '' }}">
+                                <span class="product-stock {{ $product->stock_quantity <= 5 ? 'stock-low' : '' }}">
                                     {{ $stockLabel }}
                                 </span>
                             </div>
 
-                            <div class="customer-product-meta">
+                            <div class="product-meta">
                                 <strong>₱{{ number_format((float) $product->price, 2) }}</strong>
                                 <span>{{ $product->stock_quantity }} in stock</span>
                             </div>
 
                             <form
-                                class="customer-add-form"
                                 method="POST"
                                 action="{{ route('customer.cart.add', $product) }}"
                             >
                                 @csrf
-                                <label for="quantity-{{ $product->id }}">Quantity</label>
-                                <div class="customer-add-controls">
-                                    <input
-                                        id="quantity-{{ $product->id }}"
-                                        name="quantity"
-                                        type="number"
-                                        min="1"
-                                        max="{{ $product->stock_quantity }}"
-                                        value="1"
-                                        required
-                                    >
-                                    <button type="submit">Add to order</button>
-                                </div>
+                                <input type="hidden" name="quantity" value="1">
+                                <button class="select-product-button {{ $quantityInCart >= $product->stock_quantity ? 'is-disabled' : '' }}" type="submit" aria-label="Add {{ $product->name }} to your order" @disabled($quantityInCart >= $product->stock_quantity)>
+                                    {{ $quantityInCart >= $product->stock_quantity ? 'Stock limit' : 'Add item' }} <span aria-hidden="true">+</span>
+                                </button>
                             </form>
                         </div>
                     </article>
@@ -87,55 +100,49 @@
         @endif
     </section>
 
-    <aside class="customer-cart-panel" aria-labelledby="cart-heading">
-        <div class="customer-cart-heading">
+    <aside class="sale-preview cart-panel" aria-labelledby="cart-heading">
+        <div class="preview-heading">
             <div>
-                <h2 id="cart-heading">Your order</h2>
-                <p>Review your items before checkout.</p>
+                <h2 id="cart-heading">Current Order</h2>
             </div>
-        </div>
-
-        @forelse ($cartLines as $line)
-            <div class="customer-cart-line">
-                <div class="customer-cart-item-info">
-                    <strong>{{ $line['product']->name }}</strong>
-                    <span>
-                        {{ $line['quantity'] }} × ₱{{ number_format((float) $line['product']->price, 2) }}
-                    </span>
-                </div>
-
-                <div class="customer-cart-item-actions">
-                    <strong>₱{{ number_format((float) $line['line_total'], 2) }}</strong>
-
-                    <form
-                        method="POST"
-                        action="{{ route('customer.cart.update', $line['product']) }}"
-                    >
-                        @csrf
-                        @method('PUT')
-                        <input
-                            name="quantity"
-                            type="number"
-                            min="0"
-                            max="{{ $line['product']->stock_quantity }}"
-                            value="{{ $line['quantity'] }}"
-                            aria-label="Quantity for {{ $line['product']->name }}"
-                        >
-                        <button type="submit">Update</button>
-                    </form>
-                </div>
-            </div>
-        @empty
-            <p class="customer-cart-empty">Your cart is empty.</p>
-        @endforelse
-
-        <div class="customer-cart-total">
-            <span>Total</span>
-            <strong>₱{{ number_format((float) $cartTotal, 2) }}</strong>
         </div>
 
         @if ($cartLines->isNotEmpty())
-            <form class="customer-checkout-form" method="POST" action="{{ route('customer.checkout') }}">
+            <div class="cart-lines">
+                @foreach ($cartLines as $line)
+                    <div class="selected-product cart-line">
+                        <div class="cart-line-thumb" aria-hidden="true">
+                            @if ($line['product']->image)
+                                <img src="{{ asset('storage/'.$line['product']->image) }}" alt="">
+                            @endif
+                        </div>
+                        <div class="cart-line-content">
+                            <strong>{{ $line['product']->name }}</strong>
+                            <p>{{ $line['product']->stock_quantity }} available</p>
+                            <form class="cart-quantity" method="POST" action="{{ route('customer.cart.update', $line['product']) }}">
+                                @csrf
+                                @method('PUT')
+                                <button type="submit" name="quantity" value="{{ $line['quantity'] - 1 }}" aria-label="Decrease {{ $line['product']->name }} quantity">−</button>
+                                <span aria-label="Quantity for {{ $line['product']->name }}">{{ $line['quantity'] }}</span>
+                                <button class="{{ $line['quantity'] >= $line['product']->stock_quantity ? 'is-disabled' : '' }}" type="submit" name="quantity" value="{{ $line['quantity'] + 1 }}" aria-label="Increase {{ $line['product']->name }} quantity" @disabled($line['quantity'] >= $line['product']->stock_quantity)>+</button>
+                                <button class="cart-remove" type="submit" name="quantity" value="0" aria-label="Remove {{ $line['product']->name }} from your order">Remove</button>
+                            </form>
+                        </div>
+                        <strong class="cart-line-price">₱{{ number_format((float) $line['line_total'], 2) }}</strong>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="cart-summary">
+                <div><span>Items</span><strong>{{ $cartLines->sum('quantity') }}</strong></div>
+                <div><span>Total</span><strong>₱{{ number_format((float) $cartTotal, 2) }}</strong></div>
+            </div>
+        @else
+            <p class="preview-empty">Add an item from the menu to start an order.</p>
+        @endif
+
+        @if ($cartLines->isNotEmpty())
+            <form class="cart-checkout" method="POST" action="{{ route('customer.checkout') }}">
                 @csrf
 
                 <label for="payment_method">Payment method</label>
@@ -169,8 +176,10 @@
                     <p class="customer-payment-note">Staff will verify the GCash payment.</p>
                 </div>
 
-                <button class="customer-place-order" type="submit">Place order</button>
+                <button class="cart-action" type="submit">Place order</button>
             </form>
+        @else
+            <span class="cart-action is-disabled" aria-disabled="true">Place order</span>
         @endif
     </aside>
 </div>

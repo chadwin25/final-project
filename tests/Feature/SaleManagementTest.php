@@ -35,18 +35,13 @@ class SaleManagementTest extends TestCase
         $this->assertSame(5, $product->fresh()->stock_quantity);
     }
 
-    public function test_staff_can_open_record_sale_page_with_only_available_products(): void
+    public function test_old_record_sale_url_redirects_to_the_only_pos_screen(): void
     {
         $staff = User::factory()->create();
-        $available = $this->createProduct(stock: 5);
-        $this->createProduct(stock: 0, name: 'Sold Out Product');
-        $archived = $this->createProduct(stock: 4, name: 'Archived Product');
-        $archived->delete();
 
         $this->actingAs($staff)->get(route('sales.create'))
-            ->assertOk()
-            ->assertViewIs('sales.create')
-            ->assertViewHas('products', fn ($products) => $products->modelKeys() === [$available->id]);
+            ->assertRedirect(route('dashboard'));
+        $this->get(route('dashboard'))->assertOk()->assertViewIs('dashboard')->assertDontSee('Record sale');
     }
 
     public function test_guest_cannot_open_sales_history(): void
@@ -104,7 +99,7 @@ class SaleManagementTest extends TestCase
         $this->actingAs(User::factory()->create())
             ->get(route('sales.history'))
             ->assertOk()
-            ->assertSee('Orders')
+            ->assertSee('Sales history')
             ->assertSee('Test Product')
             ->assertSee('Taylor Staff')
             ->assertSee('Archived')
@@ -143,7 +138,7 @@ class SaleManagementTest extends TestCase
                 'customer_id' => $customer->id,
                 'quantity' => 2,
             ])
-            ->assertRedirect(route('sales.create'))
+            ->assertRedirect(route('dashboard'))
             ->assertSessionHasNoErrors()
             ->assertSessionHas('status', 'Order complete. Test Product has 3 unit(s) remaining.');
 
@@ -161,6 +156,7 @@ class SaleManagementTest extends TestCase
     public function test_register_cart_lists_multiple_items_and_totals_them(): void
     {
         $staff = User::factory()->create();
+        Customer::create(['full_name' => 'POS Customer', 'email' => 'pos.customer@example.test']);
         $coffee = $this->createProduct(stock: 5, name: 'Coffee');
         $potato = Product::create([
             'name' => 'Potato',
@@ -179,6 +175,7 @@ class SaleManagementTest extends TestCase
             ->assertSee('Current Order')
             ->assertSee('Coffee')
             ->assertSee('Potato')
+            ->assertSee('POS Customer')->assertSee('Walk-in customer')
             ->assertSee('₱31.00')
             ->assertSee('Charge ₱31.00');
     }
@@ -282,7 +279,7 @@ class SaleManagementTest extends TestCase
             'product_id' => $product->id,
             'quantity' => 3,
         ], $customerInput))
-            ->assertRedirect(route('sales.create'))
+            ->assertRedirect(route('dashboard'))
             ->assertSessionHasNoErrors();
 
         $this->assertDatabaseCount('sales', 1);
@@ -319,7 +316,7 @@ class SaleManagementTest extends TestCase
             'total_price' => '0.02',
             'sold_by' => $otherStaff->id,
         ])
-            ->assertRedirect(route('sales.create'))
+            ->assertRedirect(route('dashboard'))
             ->assertSessionHasNoErrors();
 
         $this->assertDatabaseCount('sales', 1);
@@ -342,7 +339,7 @@ class SaleManagementTest extends TestCase
             'product_id' => $product->id,
             'quantity' => 2,
         ])
-            ->assertRedirect(route('sales.create'))
+            ->assertRedirect(route('dashboard'))
             ->assertSessionHasNoErrors();
 
         $this->assertSame(0, $product->fresh()->stock_quantity);
@@ -413,12 +410,12 @@ class SaleManagementTest extends TestCase
         $product = $this->createProduct(stock: 2);
 
         $this->actingAs($staff)
-            ->from(route('sales.create'))
+            ->from(route('dashboard'))
             ->post(route('sales.store'), [
                 'product_id' => $product->id,
                 'quantity' => 3,
             ])
-            ->assertRedirect(route('sales.create'))
+            ->assertRedirect(route('dashboard'))
             ->assertSessionHasErrors('quantity');
 
         $this->assertSame(2, $product->fresh()->stock_quantity);

@@ -6,7 +6,7 @@
 <div class="management-heading">
     <div>
         <h1>Customer orders</h1>
-        <p>I-review ang customer orders at i-update ang status.</p>
+        <p>Review customer orders and update their status.</p>
     </div>
 </div>
 
@@ -46,13 +46,13 @@
         <p><strong>Total: ₱{{ number_format((float) $order->total_price, 2) }}</strong></p>
 
         @if (! in_array($order->status, ['completed', 'cancelled'], true))
-            <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div class="customer-order-actions">
                 @if ($order->payment_status !== 'paid')
                     <form method="POST" action="{{ route('customer-orders.update', $order) }}">
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="action" value="verify_payment">
-                        <button type="submit">
+                        <button class="primary-button" type="submit">
                             {{ $order->payment_method === 'gcash' ? 'Verify GCash payment' : 'Confirm cash received' }}
                         </button>
                     </form>
@@ -63,7 +63,7 @@
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="action" value="preparing">
-                        <button type="submit">Start preparing</button>
+                        <button class="primary-button" type="submit">Start preparing</button>
                     </form>
                 @endif
 
@@ -72,7 +72,7 @@
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="action" value="ready">
-                        <button type="submit">Mark ready</button>
+                        <button class="primary-button" type="submit">Mark ready</button>
                     </form>
                 @endif
 
@@ -81,7 +81,7 @@
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="action" value="complete">
-                        <button type="submit">Complete order</button>
+                        <button class="primary-button" type="submit">Complete order</button>
                     </form>
                 @endif
 
@@ -90,7 +90,7 @@
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="action" value="cancel">
-                        <button type="submit">Cancel and return stock</button>
+                        <button class="customer-order-cancel" type="submit">Cancel and return stock</button>
                     </form>
                 @endif
             </div>
@@ -99,7 +99,7 @@
 @empty
     <div class="management-empty">
         <h2>No customer orders yet</h2>
-        <p>Kapag nag-place ng order ang customer, lalabas ito rito.</p>
+        <p>Customer orders will appear here after checkout.</p>
     </div>
 @endforelse
 

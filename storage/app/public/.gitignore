@@ -1,2 +1,12 @@
 *
 !.gitignore
+!/products/
+!/products/*.jpg
+!/products/*.jpeg
+!/products/*.png
+!/products/*.webp
+!/avatars/
+!/avatars/*.jpg
+!/avatars/*.jpeg
+!/avatars/*.png
+!/avatars/*.webp

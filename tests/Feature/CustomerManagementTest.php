@@ -13,6 +13,47 @@ class CustomerManagementTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_customer_menu_search_and_categories_preserve_the_cart(): void
+    {
+        $customer = Customer::create(['full_name' => 'Customer', 'email' => 'customer@example.test']);
+        Product::create(['name' => 'Rice Meal', 'category' => 'food', 'price' => '65.00', 'stock_quantity' => 5]);
+        $juice = Product::create(['name' => 'Calamansi Juice', 'category' => 'drinks', 'price' => '20.00', 'stock_quantity' => 2]);
+        Product::create(['name' => 'Sold Out Juice', 'category' => 'drinks', 'price' => '20.00', 'stock_quantity' => 0]);
+        $this->actingAs($customer, 'customer')->withSession(['customer_cart' => [$juice->id => 1]])
+            ->get(route('customer.home', ['category' => 'drinks', 'search' => 'Juice']))
+            ->assertOk()->assertSee('Calamansi Juice')->assertDontSee('Rice Meal')->assertDontSee('Sold Out Juice')
+            ->assertSee('Search menu')->assertSee('Add-on')->assertSee('aria-current="page"', false)
+            ->assertSee('Current Order')->assertSessionHas('customer_cart.'.$juice->id, 1);
+        $this->get(route('customer.home', ['category' => 'food']))->assertOk()
+            ->assertSee('Rice Meal')->assertSee('Calamansi Juice')
+            ->assertSessionHas('customer_cart.'.$juice->id, 1);
+    }
+
+    public function test_customer_can_increase_decrease_and_remove_cart_items_without_changing_stock(): void
+    {
+        $customer = Customer::create(['full_name' => 'Customer', 'email' => 'customer@example.test']);
+        $product = Product::create(['name' => 'Coffee', 'price' => '9.50', 'stock_quantity' => 3]);
+        $this->actingAs($customer, 'customer')->from(route('customer.home'))
+            ->post(route('customer.cart.add', $product), ['quantity' => '1'])
+            ->assertRedirect(route('customer.home'))->assertSessionHas('customer_cart.'.$product->id, 1);
+        $this->get(route('customer.home'))->assertOk()
+            ->assertSee('Decrease Coffee quantity')->assertSee('Increase Coffee quantity')
+            ->assertSee('Remove Coffee from your order');
+
+        $this->put(route('customer.cart.update', $product), ['quantity' => '2'])
+            ->assertSessionHas('customer_cart.'.$product->id, 2);
+        $this->get(route('customer.home'))->assertOk()->assertSee('₱19.00');
+        $this->put(route('customer.cart.update', $product), ['quantity' => '4'])
+            ->assertSessionHasErrors('quantity')->assertSessionHas('customer_cart.'.$product->id, 2);
+        $this->put(route('customer.cart.update', $product), ['quantity' => '1'])
+            ->assertSessionHas('customer_cart.'.$product->id, 1);
+        $this->put(route('customer.cart.update', $product), ['quantity' => '0'])
+            ->assertSessionMissing('customer_cart.'.$product->id);
+        $this->get(route('customer.home'))->assertSee('Add an item from the menu to start an order.');
+        $this->assertSame(3, $product->fresh()->stock_quantity);
+        $this->assertDatabaseCount('customer_orders', 0);
+    }
+
     public function test_guest_cannot_open_customers(): void
     {
         $this->get(route('customers.index'))
